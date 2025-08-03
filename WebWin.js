@@ -1379,7 +1379,7 @@ class BaseUWPTile extends HTMLElement {
         <div class="tile medium blue">
             <div class="tile-content">
                 <div class="tile-icon-container">
-                    <img src="" class="tile-icon" alt="Tile icon">
+                    <img src="" class="tile-icon" alt="Tile icon" draggable="false">
                 </div>
                 <div class="tile-title"><slot></slot></div>
             </div>
@@ -1505,6 +1505,7 @@ class BaseUWPLargeTile extends HTMLElement {
             width: 40px;
             height: 40px;
             object-fit: contain;
+            user-select: none;
         }
         
         .tile-title {
@@ -1571,7 +1572,7 @@ class BaseUWPLargeTile extends HTMLElement {
         <div class="tile large blue">
             <div class="tile-content">
                 <div class="tile-icon-container">
-                    <img src="" class="tile-icon" alt="Tile icon">
+                    <img src="" class="tile-icon" alt="Tile icon" draggable="false">
                 </div>
                 <div class="tile-title"><slot></slot></div>
             </div>
