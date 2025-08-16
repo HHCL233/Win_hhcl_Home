@@ -262,17 +262,19 @@ class BaseUWPSelectableList extends HTMLElement {
       }
     }
 
-    if (!customElements.get("win-list-item")) {
-      customElements.define("win-list-item", UWPButton);
+    // 注册内部按钮组件
+    if (!customElements.get("uwp-button")) {
+      customElements.define("uwp-button", UWPButton);
     }
 
+    // 列表容器的模板
     this.shadowRoot.innerHTML = `
       <style>
         :host {
           display: block;
         }
         
-        ::slotted(win-list-item) {
+        ::slotted(uwp-button) {
           display: block;
           width: 100%;
           margin: 0px 0;
@@ -284,12 +286,14 @@ class BaseUWPSelectableList extends HTMLElement {
 
   connectedCallback() {
     this.addEventListener("uwp-select", this.handleSelect.bind(this));
+    // 确保至少有一个选项被选中
     this._ensureSelection();
   }
 
+  // 确保至少有一个选项被选中
   _ensureSelection() {
     if (
-      !this.querySelector("win-list-item[selected]") &&
+      !this.querySelector("uwp-button[selected]") &&
       this.children.length > 0
     ) {
       this.children[0].selected = true;
@@ -300,16 +304,19 @@ class BaseUWPSelectableList extends HTMLElement {
   handleSelect(e) {
     if (e.target.selected) return;
 
-    this.querySelectorAll("win-list-item").forEach((button) => {
+    // 取消所有其他按钮的选中状态
+    this.querySelectorAll("uwp-button").forEach((button) => {
       if (button !== e.target) {
         button.selected = false;
       }
     });
 
+    // 直接设置内部状态避免递归
     e.target._selected = true;
     e.target.button.classList.add("selected");
     e.target.setAttribute("selected", "");
 
+    // 触发选择变化事件
     this.dispatchEvent(
       new CustomEvent("uwp-selection-changed", {
         detail: {
@@ -321,21 +328,25 @@ class BaseUWPSelectableList extends HTMLElement {
     );
   }
 
+  // 添加新按钮
   addButton(text, selected = false) {
-    const button = document.createElement("win-list-item");
+    const button = document.createElement("uwp-button");
     button.textContent = text;
     if (selected) {
-      this.querySelectorAll("win-list-item").forEach((btn) => {
+      // 取消其他按钮的选中状态
+      this.querySelectorAll("uwp-button").forEach((btn) => {
         btn.selected = false;
       });
       button.selected = true;
-    } else if (this.querySelectorAll("win-list-item[selected]").length === 0) {
+    } else if (this.querySelectorAll("uwp-button[selected]").length === 0) {
+      // 如果没有选中的按钮，则选中新添加的按钮
       button.selected = true;
     }
     this.appendChild(button);
     return button;
   }
 
+  // 批量设置按钮
   setButtons(buttonTexts, selectedIndex = 0) {
     // 默认选中第一个
     this.innerHTML = "";
@@ -348,13 +359,13 @@ class BaseUWPSelectableList extends HTMLElement {
 
   // 获取当前选中的值
   getSelectedValue() {
-    const selected = this.querySelector("win-list-item[selected]");
+    const selected = this.querySelector("uwp-button[selected]");
     return selected ? selected.textContent : null;
   }
 
   // 获取当前选中的索引
   getSelectedIndex() {
-    const selected = this.querySelector("win-list-item[selected]");
+    const selected = this.querySelector("uwp-button[selected]");
     return selected ? Array.from(this.children).indexOf(selected) : -1;
   }
 }
@@ -503,8 +514,8 @@ class BaseUWPOpenList extends HTMLElement {
     }
 
     // 注册内部按钮组件
-    if (!customElements.get("win-list-item")) {
-      customElements.define("win-list-item", UWPButton);
+    if (!customElements.get("uwp-button")) {
+      customElements.define("uwp-button", UWPButton);
     }
 
     // 列表容器的模板
@@ -514,7 +525,7 @@ class BaseUWPOpenList extends HTMLElement {
           display: block;
         }
         
-        ::slotted(win-list-item) {
+        ::slotted(uwp-button) {
           display: block;
           width: 100%;
           margin: 0px 0;
@@ -526,7 +537,7 @@ class BaseUWPOpenList extends HTMLElement {
 
   // 添加新按钮
   addButton(text, selected = false) {
-    const button = document.createElement("win-list-item");
+    const button = document.createElement("uwp-button");
     button.textContent = text;
   }
 
@@ -543,13 +554,13 @@ class BaseUWPOpenList extends HTMLElement {
 
   // 获取当前选中的值
   getSelectedValue() {
-    const selected = this.querySelector("win-list-item[selected]");
+    const selected = this.querySelector("uwp-button[selected]");
     return selected ? selected.textContent : null;
   }
 
   // 获取当前选中的索引
   getSelectedIndex() {
-    const selected = this.querySelector("win-list-item[selected]");
+    const selected = this.querySelector("uwp-button[selected]");
     return selected ? Array.from(this.children).indexOf(selected) : -1;
   }
 }
@@ -976,10 +987,11 @@ class BaseUWPDialog extends HTMLElement {
         }
         
         :host([show]) .dialog-container {
-          transform: scale(1); 
+          transform: scale(1); /* 打开时放大到正常尺寸 */
           opacity: 1;
         }
         
+        /* 关闭时的动画 - 通过JS动态添加类 */
         .dialog-container.closing {
           transform: scale(1.055);
           opacity: 0;
@@ -1274,10 +1286,11 @@ class BaseUWPTile extends HTMLElement {
         .tile {
             position: relative;
             overflow: hidden;
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            height: 100%;
             margin: 2px;
             display: inline-block;
+            vertical-align: top;
         }
         
         .tile-content {
@@ -1300,13 +1313,13 @@ class BaseUWPTile extends HTMLElement {
         }
         
         .tile-icon {
-            width: 40px;
-            height: 40px;
+            width: 80px;
+            height: 80px;
             object-fit: contain;
         }
         
         .tile-title {
-            font-size: 12px;
+            font-size: 24px;
             font-weight: 600;
             text-align: left;
             margin-top: auto; 
@@ -1321,12 +1334,12 @@ class BaseUWPTile extends HTMLElement {
             left: 0;
             right: 0;
             bottom: 0;
-            border: 4px solid transparent;
+            border: 6px solid transparent;
             pointer-events: none;
             border-image: radial-gradient(
                 circle at var(--mouse-x) var(--mouse-y),
                 rgba(255, 255, 255, var(--edge-brightness)) 0%,
-                rgba(255, 255, 255, 0.39) 70%
+                rgba(255, 255, 255, 0.6) 70%
             ) 1;
             opacity: 0;
         }
@@ -1334,8 +1347,8 @@ class BaseUWPTile extends HTMLElement {
         .tile::after {
             content: '';
             position: absolute;
-            width: 150px;
-            height: 150px;
+            width: 300px;
+            height: 300px;
             background: radial-gradient(
                 circle at center,
                 rgba(255, 255, 255, 0.3) 0%,
@@ -1462,10 +1475,11 @@ class BaseUWPWhiteTile extends HTMLElement {
         .tile {
             position: relative;
             overflow: hidden;
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            height: 100%;
             margin: 2px;
             display: inline-block;
+            vertical-align: top;
         }
         
         .tile-content {
@@ -1488,13 +1502,13 @@ class BaseUWPWhiteTile extends HTMLElement {
         }
         
         .tile-icon {
-            width: 40px;
-            height: 40px;
+            width: 80px;
+            height: 80px;
             object-fit: contain;
         }
         
         .tile-title {
-            font-size: 12px;
+            font-size: 24px;
             font-weight: 600;
             text-align: left;
             margin-top: auto; 
@@ -1509,12 +1523,12 @@ class BaseUWPWhiteTile extends HTMLElement {
             left: 0;
             right: 0;
             bottom: 0;
-            border: 4px solid transparent;
+            border: 6px solid transparent;
             pointer-events: none;
             border-image: radial-gradient(
                 circle at var(--mouse-x) var(--mouse-y),
                 rgba(255, 255, 255, var(--edge-brightness)) 0%,
-                rgba(255, 255, 255, 0.39) 70%
+                rgba(255, 255, 255, 0.6) 70%
             ) 1;
             opacity: 0;
         }
@@ -1522,8 +1536,8 @@ class BaseUWPWhiteTile extends HTMLElement {
         .tile::after {
             content: '';
             position: absolute;
-            width: 150px;
-            height: 150px;
+            width: 300px;
+            height: 300px;
             background: radial-gradient(
                 circle at center,
                 rgba(255, 255, 255, 0.3) 0%,
@@ -1649,10 +1663,11 @@ class BaseUWPGreenTile extends HTMLElement {
         .tile {
             position: relative;
             overflow: hidden;
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            height: 100%;
             margin: 2px;
             display: inline-block;
+            vertical-align: top;
         }
         
         .tile-content {
@@ -1675,13 +1690,13 @@ class BaseUWPGreenTile extends HTMLElement {
         }
         
         .tile-icon {
-            width: 40px;
-            height: 40px;
+            width: 80px;
+            height: 80px;
             object-fit: contain;
         }
         
         .tile-title {
-            font-size: 12px;
+            font-size: 24px;
             font-weight: 600;
             text-align: left;
             margin-top: auto; 
@@ -1696,12 +1711,12 @@ class BaseUWPGreenTile extends HTMLElement {
             left: 0;
             right: 0;
             bottom: 0;
-            border: 4px solid transparent;
+            border: 6px solid transparent;
             pointer-events: none;
             border-image: radial-gradient(
                 circle at var(--mouse-x) var(--mouse-y),
                 rgba(255, 255, 255, var(--edge-brightness)) 0%,
-                rgba(255, 255, 255, 0.39) 70%
+                rgba(255, 255, 255, 0.6) 70%
             ) 1;
             opacity: 0;
         }
@@ -1709,8 +1724,8 @@ class BaseUWPGreenTile extends HTMLElement {
         .tile::after {
             content: '';
             position: absolute;
-            width: 150px;
-            height: 150px;
+            width: 300px;
+            height: 300px;
             background: radial-gradient(
                 circle at center,
                 rgba(255, 255, 255, 0.3) 0%,
@@ -1840,6 +1855,7 @@ class BaseUWPLargeTile extends HTMLElement {
             height: 204px;
             margin: 1px;
             display: inline-block;
+            vertical-align: top;
         }
         
         .tile-content {
@@ -2018,339 +2034,7 @@ class BaseUWPLargeTile extends HTMLElement {
     }
   }
 }
-class BaseUWPSelectableListPlus extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: "open" });
 
-    // 定义内部按钮组件
-    class UWPButton extends HTMLElement {
-      static get observedAttributes() {
-        return ["disabled", "selected", "icon"];
-      }
-
-      constructor() {
-        super();
-        this.attachShadow({ mode: "open" });
-        this._selected = false;
-        this._updating = false;
-        this._icon = "";
-
-        this.shadowRoot.innerHTML = `
-          <style>
-            :host {
-              display: block;
-              margin: 4px;
-              position: relative;
-            }
-            
-            .uwpbutton {
-              cursor: default;
-              display: flex;
-              align-items: center;
-              vertical-align: middle;
-              line-height: 28px;
-              min-height: 28px;
-              width: 100%;
-              text-align: left;
-              padding: 10px 10px;
-              background: var(--primary-color, #ffffffff);
-              color: rgb(0, 0, 0);
-              border: none;
-              cursor: default;
-              font-size: 16px;
-              position: relative;
-            }
-            
-            .icon-container {
-              width: 24px;
-              height: 24px;
-              display: inline-flex;
-              align-items: center;
-              margin: 0px;
-            }
-            
-            .text-content {
-              flex: 1;
-              margin-top: 1px;
-            }
-            
-            .uwpbutton.selected {
-              background: var(--accent-color, #ffffffff);
-            }
-            
-            .uwpbutton:active {
-              cursor: default;
-              background: var(--primary-color, #C2C2C2);
-            }
-            
-            .uwpbutton:hover:not(.selected) {
-              cursor: default;
-              background: var(--primary-color, #DADADA) !important ;
-            }
-            
-            .uwpbutton.selected {
-              color: var(--accent-color, #006fd0);
-            }
-            
-            .uwpbutton:disabled {
-              filter: blur(0);
-              color: rgb(145, 145, 145);
-              background: #cccccc;
-              cursor: not-allowed;
-            }
-          </style>
-          <button class="uwpbutton">
-            <div class="icon-container"></div>
-            <span class="text-content"><slot></slot></span>
-          </button>
-        `;
-
-        this.button = this.shadowRoot.querySelector(".uwpbutton");
-        this.iconContainer = this.shadowRoot.querySelector(".icon-container");
-      }
-
-      connectedCallback() {
-        this.button.addEventListener("click", () => {
-          if (!this.disabled) {
-            this.dispatchEvent(
-              new CustomEvent("uwp-select", {
-                bubbles: true,
-                composed: true,
-                detail: {
-                  value: this.textContent,
-                  selected: true,
-                },
-              })
-            );
-          }
-        });
-        
-        // 初始化图标
-        if (this.hasAttribute('icon')) {
-          this._updateIcon(this.getAttribute('icon'));
-        }
-      }
-
-      // 更新图标显示
-      _updateIcon(iconValue) {
-        if (!iconValue) {
-          this.iconContainer.innerHTML = '';
-          return;
-        }
-        
-        if (iconValue.trim().startsWith('<svg')) {
-          this.iconContainer.innerHTML = iconValue;
-        } else {
-          this.iconContainer.innerHTML = `<span class="${iconValue}"></span>`;
-        }
-      }
-
-      set selected(value) {
-        if (this._updating) return;
-        this._updating = true;
-
-        const newValue = Boolean(value);
-        if (this._selected !== newValue) {
-          this._selected = newValue;
-          this.button.classList.toggle("selected", newValue);
-
-          if (newValue) {
-            this.setAttribute("selected", "");
-          } else {
-            this.removeAttribute("selected");
-          }
-        }
-
-        this._updating = false;
-      }
-
-      get selected() {
-        return this._selected;
-      }
-
-      set icon(value) {
-        if (value) {
-          this.setAttribute('icon', value);
-        } else {
-          this.removeAttribute('icon');
-        }
-      }
-
-      get icon() {
-        return this.getAttribute('icon') || '';
-      }
-
-      attributeChangedCallback(name, oldValue, newValue) {
-        if (this._updating || oldValue === newValue) return;
-
-        if (name === "selected") {
-          this._selected = newValue !== null;
-          this.button.classList.toggle("selected", this._selected);
-        } else if (name === "disabled") {
-          this.button.disabled = newValue !== null;
-        } else if (name === "icon") {
-          this._updateIcon(newValue);
-        }
-      }
-
-      set disabled(value) {
-        if (value) {
-          this.setAttribute("disabled", "");
-        } else {
-          this.removeAttribute("disabled");
-        }
-      }
-
-      get disabled() {
-        return this.hasAttribute("disabled");
-      }
-    }
-
-    if (!customElements.get("win-list-item")) {
-      customElements.define("win-list-item", UWPButton);
-    }
-
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: block;
-          position: relative;
-          padding-left: 4px; 
-        }
-        
-        ::slotted(win-list-item) {
-          display: block;
-          width: 100%;
-          margin: 0px 0;
-        }
-        
-        .select {
-          position: absolute;
-          left: 0;
-          width: 4px;
-          height: 24px; 
-          background: var(--accent-color, #0091ffff);
-          z-index: 1;
-        }
-      </style>
-      <div class="select"></div>
-      <slot></slot>
-    `;
-
-    this.selectIndicator = this.shadowRoot.querySelector('.select');
-  }
-
-  connectedCallback() {
-    this.addEventListener("uwp-select", this.handleSelect.bind(this));
-    this._ensureSelection();
-    this.updateSelectPosition();
-    
-    window.addEventListener('resize', () => this.updateSelectPosition());
-  }
-
-  disconnectedCallback() {
-    window.removeEventListener('resize', () => this.updateSelectPosition());
-  }
-
-  _ensureSelection() {
-    if (
-      !this.querySelector("win-list-item[selected]") &&
-      this.children.length > 0
-    ) {
-      this.children[0].selected = true;
-      this.updateSelectPosition();
-    }
-  }
-
-  // 更新选择指示器位置 - 使其垂直居中
-  updateSelectPosition() {
-    const selectedButton = this.querySelector("win-list-item[selected]");
-    if (selectedButton && this.selectIndicator) {
-      const rect = selectedButton.getBoundingClientRect();
-      const listRect = this.getBoundingClientRect();
-      const indicatorHeight = this.selectIndicator.offsetHeight;
-      
-      const topPosition = (rect.top - listRect.top) + (rect.height - indicatorHeight) / 2;
-      
-      this.selectIndicator.style.top = `${topPosition}px`;
-    }
-  }
-
-  handleSelect(e) {
-    if (e.target.selected) return;
-
-    this.querySelectorAll("win-list-item").forEach((button) => {
-      if (button !== e.target) {
-        button.selected = false;
-      }
-    });
-
-    e.target._selected = true;
-    e.target.setAttribute("selected", "");
-    
-    this.updateSelectPosition();
-
-    this.dispatchEvent(
-      new CustomEvent("uwp-selection-changed", {
-        detail: {
-          selectedValue: e.detail.value,
-          selectedIndex: Array.from(this.children).indexOf(e.target),
-          selectedElement: e.target,
-        },
-      })
-    );
-  }
-
-  addButton(text, selected = false, icon = "") {
-    const button = document.createElement("win-list-item");
-    button.textContent = text;
-    
-    if (icon) {
-      button.setAttribute("icon", icon);
-    }
-    
-    if (selected) {
-      this.querySelectorAll("win-list-item").forEach((btn) => {
-        btn.selected = false;
-      });
-      button.selected = true;
-    } else if (this.querySelectorAll("win-list-item[selected]").length === 0) {
-      button.selected = true;
-    }
-    
-    this.appendChild(button);
-    
-    if (selected) {
-      this.updateSelectPosition();
-    }
-    
-    return button;
-  }
-
-  setButtons(buttonTexts, selectedIndex = 0) {
-    this.innerHTML = "";
-    buttonTexts.forEach((item, index) => {
-      if (typeof item === 'string') {
-        this.addButton(item, index === selectedIndex);
-      } else {
-        this.addButton(item.text, index === selectedIndex, item.icon);
-      }
-    });
-    this._ensureSelection();
-    this.updateSelectPosition();
-  }
-
-  getSelectedValue() {
-    const selected = this.querySelector("win-list-item[selected]");
-    return selected ? selected.textContent : null;
-  }
-
-  getSelectedIndex() {
-    const selected = this.querySelector("win-list-item[selected]");
-    return selected ? Array.from(this.children).indexOf(selected) : -1;
-  }
-}
 class UWPLargeTile extends BaseUWPLargeTile {}
 
 class UWPTile extends BaseUWPTile {}
@@ -2366,8 +2050,6 @@ class UWPRichEditBox extends BaseUWPRichEditBox {}
 class UWPDialog extends BaseUWPDialog {}
 
 class UWPSelectableList extends BaseUWPSelectableList {}
-
-class UWPSelectableListPlus extends BaseUWPSelectableListPlus {}
 
 class UWPCheckbox extends BaseUWPCheckbox {}
 
@@ -2392,7 +2074,6 @@ customElements.define("win-tile", UWPTile);
 customElements.define("win-large-tile", UWPLargeTile);
 customElements.define("win-white-tile", UWPWhiteTile);
 customElements.define("win-green-tile", UWPGreenTile);
-customElements.define("win-list-plus", BaseUWPSelectableListPlus);
 
 export {
   UWPButton,
@@ -2407,6 +2088,5 @@ export {
   UWPTile,
   UWPLargeTile,
   UWPWhiteTile,
-  UWPGreenTile,
-  UWPSelectableListPlus
+  UWPGreenTile
 };
