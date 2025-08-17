@@ -492,7 +492,6 @@ class BaseUWPOpenList extends HTMLElement {
         if (this._updating) return;
 
         if (name === "selected") {
-          // 只更新内部状态，不触发setter的循环
           this._selected = newValue !== null;
           this.button.classList.toggle("selected", this._selected);
         } else if (name === "disabled") {
@@ -967,7 +966,7 @@ class BaseUWPDialog extends HTMLElement {
         
         :host([show]) {
           visibility: visible;
-          background-color: rgba(255, 255, 255, 0.56);
+          background-color: rgba(0, 0, 0, 0.56);
           transition: background-color 0.3s ease;
         }
         
@@ -998,9 +997,9 @@ class BaseUWPDialog extends HTMLElement {
         }
         
         .dialog-container {
-          outline: 0.25px solid #1B86D9;
+          outline: 0.25px solid #6778cc;
           outline-offset: -0.25px;
-          background-color: white;
+          background-color: #4b4b4bff;
           
           box-shadow: 0 0px 12px rgba(0, 0, 0, 0.28);
           overflow: hidden;
@@ -1020,14 +1019,15 @@ class BaseUWPDialog extends HTMLElement {
           margin-left: 16px;
           margin-top: 16px;
           font-size: 25px;
+          color: white;
           font-weight: normal;
-          background-color: var(--primary-color,rgb(255, 255, 255));
-          color: black;
+          background-color: var(--primary-color,#4b4b4bff);
         }
         
         .dialog-content {
           margin-left: 16px;
           margin-top: 16px;
+          color: white;
           font-size: 16px;
           line-height: 1.5;
         }
@@ -1038,7 +1038,7 @@ class BaseUWPDialog extends HTMLElement {
           display: flex;
           justify-content: flex-end;
           gap: 8px;
-          background-color:rgb(255, 255, 255);
+          background-color:#4b4b4bff;
         }
         
         .uwpbutton {
@@ -1047,8 +1047,8 @@ class BaseUWPDialog extends HTMLElement {
           line-height: 16.67px;
           min-height: 16.67px;
           padding: 10px 20px;
-          background: var(--primary-color, #CCCCCC);
-          color: rgb(0, 0, 0);
+          background: var(--primary-color, #9B9C9F);
+          color: rgba(255, 255, 255, 1);
           border: none;
           cursor: default;
           font-size: 16px;
